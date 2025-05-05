@@ -2,6 +2,7 @@
 Flask API for the Restaurant sentiment analysis model(s).
 """
 
+import os
 import joblib
 from flask import Flask, jsonify, request
 from flasgger import Swagger
@@ -83,6 +84,24 @@ def dumb_predict():
         "sms": sms
     })
 
+@app.route("/version")
+def version():
+    """
+    Show model service version
+    ---
+    consumes:
+      - nothing
+    responses:
+      200:
+        description: "The service version"
+    """
+    version = os.getenv("VERSION", "unknown")
+    
+    version = version.split('-')[0] # git describe --tags returns in the format TAG-COMMIT INFO, but we want just the tag
+    
+    return jsonify({
+      "version": version
+    })
 
 if __name__ == '__main__':
     # clf = joblib.load('output/model.joblib') TODO insert actual model here

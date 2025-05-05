@@ -35,10 +35,11 @@ jobs:
       - name: Registry Login (ghcr.io)
         run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build, tag, and publish image # TODO fix lack of permissions 
+      - name: Build, tag, and publish image
         run: |
           IMG=ghcr.io/${{ github.repository }}
           docker build \
+            --build-arg VERSION=$(git describe --tags) \
             -t ${IMG}:latest \
             -t ${IMG}:${{ env.version_major }}-latest \
             -t ${IMG}:${{ env.version_major }}.${{ env.version_minor }}-latest \
