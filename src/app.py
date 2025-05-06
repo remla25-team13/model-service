@@ -39,8 +39,9 @@ def predict():
     input_data = request.get_json()
     sms = input_data.get('sms')
     
-    # TODO uncomment once lib-ml and the model setup is fully clarified
     processed_sms = preprocessor.preprocess(sms) 
+    
+    # Pending access to the models
     #model = joblib.load('output/model.joblib')
     #prediction = model.predict(processed_sms)[0]
     prediction = 'Spam'
@@ -105,5 +106,7 @@ def version():
     })
 
 if __name__ == '__main__':
-    # clf = joblib.load('output/model.joblib') TODO insert actual model here
+    # clf = joblib.load('output/model.joblib') TODO Pending access to the models
+
     app.run(host="0.0.0.0", port=8080, debug=True)
+    
