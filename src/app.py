@@ -7,10 +7,11 @@ import joblib
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 
-# from lib_ml import prepare, _extract_message_len, _text_process TODO temp
+from lib_ml import Preprocessor
 
 app = Flask(__name__)
 swagger = Swagger(app)
+preprocessor = Preprocessor()
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -39,7 +40,7 @@ def predict():
     sms = input_data.get('sms')
     
     # TODO uncomment once lib-ml and the model setup is fully clarified
-    #processed_sms = prepare(sms) 
+    processed_sms = preprocessor.preprocess(sms) 
     #model = joblib.load('output/model.joblib')
     #prediction = model.predict(processed_sms)[0]
     prediction = 'Spam'
