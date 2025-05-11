@@ -35,4 +35,4 @@ RUN python -m pip install --upgrade pip &&\
 
 EXPOSE 8081
 
-ENTRYPOINT [ "./src/entry.sh" ]
+ENTRYPOINT [ "/root/src/entry.sh" ]
