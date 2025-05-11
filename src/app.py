@@ -76,5 +76,5 @@ if __name__ == '__main__':
   mode = os.getenv("MODE", "DEV")
   debug = False if mode == 'PROD' else True
   
-  app.run(host="0.0.0.0", port=8080, debug=debug)
+  app.run(host="0.0.0.0", port=8081, debug=debug)
     

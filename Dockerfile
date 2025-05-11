@@ -33,6 +33,6 @@ RUN python -m pip install --upgrade pip &&\
         pip install -r requirements.txt
 
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT [ "./src/entry.sh" ]
