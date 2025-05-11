@@ -47,7 +47,7 @@ def predict():
   
   prediction = model.predict(vectorized)[0]
   prediction = "Positive" if prediction == 1 else "Negative"
-  
+
   res = {
       "result": prediction,
       "sms": review
@@ -73,5 +73,8 @@ def version():
   })
 
 if __name__ == '__main__':
-  app.run(host="0.0.0.0", port=8080, debug=True)
+  mode = os.getenv("MODE", "DEV")
+  debug = False if mode == 'PROD' else True
+  
+  app.run(host="0.0.0.0", port=8080, debug=debug)
     

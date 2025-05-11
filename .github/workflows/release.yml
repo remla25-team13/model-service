@@ -40,6 +40,7 @@ jobs:
           IMG=ghcr.io/${{ github.repository }}
           docker build \
             --build-arg VERSION=$(git describe --tags) \
+            --build-arg MODE=PROD \
             -t ${IMG}:latest \
             -t ${IMG}:${{ env.version_major }}-latest \
             -t ${IMG}:${{ env.version_major }}.${{ env.version_minor }}-latest \
