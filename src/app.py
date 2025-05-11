@@ -22,7 +22,7 @@ def home():
       200:
         description: A greeting message
     """
-    return "Hello, World! From app-service."
+    return "Hello, World! From model-service."
 
 @app.route('/predict', methods=['POST'])
 def predict():
