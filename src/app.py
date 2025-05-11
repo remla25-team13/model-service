@@ -13,6 +13,17 @@ app = Flask(__name__)
 swagger = Swagger(app)
 preprocessor = Preprocessor()
 
+@app.route("/", methods=["GET"])
+def home():
+    """
+    Home endpoint returning a greeting.
+    ---
+    responses:
+      200:
+        description: A greeting message
+    """
+    return "Hello, World! From app-service."
+
 @app.route('/predict', methods=['POST'])
 def predict():
   """
