@@ -1,4 +1,5 @@
 joblib==1.4.2
 Flask==2.3.3
 flasgger==0.9.7.1
+waitress==3.0.2
 lib_ml @ git+https://github.com/remla25-team13/lib-ml.git@v0.1.1
