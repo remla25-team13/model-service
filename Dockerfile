@@ -1,13 +1,8 @@
 FROM python:3.12.9-slim
 
 ARG VERSION=unknown
-
-RUN version="${VERSION}" && \ 
-        clean="${version%%-*}" && \
-        echo "$clean" && \
-        echo "VERSION=$clean" >> /root/.env
-
-ENV VERSION=$VERSION
+ENV VERSION=${VERSION%%-*}
+ENV MODE=${MODE}
 
 RUN apt-get update && apt-get install -y git wget unzip\ 
         && rm -rf /var/lib/apt/lists/*

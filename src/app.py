@@ -16,76 +16,44 @@ preprocessor = Preprocessor()
 @app.route('/predict', methods=['POST'])
 def predict():
   """
-  Predict whether an SMS is Spam.
+  Predict the sentiment of a review.
   ---
   consumes:
     - application/json
   parameters:
       - name: input_data
         in: body
-        description: message to be classified.
+        description: review to be classified.
         required: True
         schema:
           type: object
-          required: sms
+          required: review
           properties:
-              sms:
+              review:
                   type: string
-                  example: This is an example of an SMS.
+                  example: This is an example of a review.
   responses:
     200:
       description: "The result of the classification: 'spam' or 'ham'."
   """
   input_data = request.get_json()
-  sms = input_data.get('sms')
+  review = input_data.get('review')
   
   vectorizer = joblib.load("output/bow_vectorizer.pkl")
   model = joblib.load('output/sentiment_model.pkl')
   
-  processed_sms = preprocessor.preprocess(sms) 
+  processed_sms = preprocessor.preprocess(review) 
   vectorized = vectorizer.transform([processed_sms]).toarray()
   
   prediction = model.predict(vectorized)[0]
-  prediction = 'Spam'
+  prediction = "Positive" if prediction == 1 else "Negative"
   
   res = {
       "result": prediction,
-      "sms": sms
+      "sms": review
   }
-  print(res)
-  return jsonify(res)
-
-@app.route('/dumbpredict', methods=['POST'])
-def dumb_predict():
-  """
-  Predict whether a given SMS is Spam or Ham (dumb model: always predicts 'ham').
-  ---
-  consumes:
-    - application/json
-  parameters:
-      - name: input_data
-        in: body
-        description: message to be classified.
-        required: True
-        schema:
-          type: object
-          required: sms
-          properties:
-              sms:
-                  type: string
-                  example: This is an example of an SMS.
-  responses:
-    200:
-      description: "The result of the classification: 'spam' or 'ham'."
-  """
-  input_data = request.get_json()
-  sms = input_data.get('sms')
   
-  return jsonify({
-      "result": "Spam",
-      "classifier": "decision tree",
-      "sms": sms
-  })
+  return jsonify(res)
 
 @app.route("/version")
 def version():
