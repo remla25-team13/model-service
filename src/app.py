@@ -9,6 +9,8 @@ from flasgger import Swagger
 
 from lib_ml import Preprocessor
 
+from util import download_model, download_vectorizer
+
 app = Flask(__name__)
 swagger = Swagger(app)
 preprocessor = Preprocessor()
@@ -45,7 +47,7 @@ def predict():
                   example: This is an example of a review.
   responses:
     200:
-      description: "The result of the classification: 'spam' or 'ham'."
+      description: "The result of the classification: 'Positive' or 'Negative'."
   """
   input_data = request.get_json()
   review = input_data.get('review')
@@ -86,8 +88,14 @@ def version():
 if __name__ == '__main__':
   mode = os.getenv("MODE", "DEV")
   port = os.getenv("PORT", 8080)
+  host = os.getenv("HOST", "0.0.0.0")
+  artifact_version = os.getenv("ARTIFACT_VERSION", "v0.0.8")
   
   debug = False if mode == 'PROD' else True
   
-  app.run(host="0.0.0.0", port=port, debug=debug)
+  print("Downloading model files")
+  download_model(artifact_version)
+  download_vectorizer(artifact_version)
+  
+  app.run(host=host, port=port, debug=debug)
     
