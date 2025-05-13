@@ -40,10 +40,20 @@ def download_vectorizer(MODEL_VERSION: str):
     else:
         print("Vectorizer file already exists")
 
+mode = os.getenv("MODE", "DEV")
+port = os.getenv("PORT", 8080)
+host = os.getenv("HOST", "0.0.0.0")
+artifact_version = os.getenv("ARTIFACT_VERSION", "v0.0.8")
+
+debug = False if mode == 'PROD' else True
 
 app = Flask(__name__)
 swagger = Swagger(app)
 preprocessor = Preprocessor()
+
+print("Downloading model files")
+download_model(artifact_version)
+download_vectorizer(artifact_version)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -116,16 +126,5 @@ def version():
   })
 
 if __name__ == '__main__':
-  mode = os.getenv("MODE", "DEV")
-  port = os.getenv("PORT", 8080)
-  host = os.getenv("HOST", "0.0.0.0")
-  artifact_version = os.getenv("ARTIFACT_VERSION", "v0.0.8")
-  
-  debug = False if mode == 'PROD' else True
-  
-  print("Downloading model files")
-  download_model(artifact_version)
-  download_vectorizer(artifact_version)
-  
   app.run(host=host, port=port, debug=debug)
     
