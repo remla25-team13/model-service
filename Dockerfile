@@ -2,9 +2,11 @@ FROM python:3.12.9-slim
 
 ARG VERSION=unknown
 ARG MODE="DEV"
+ARG PORT=8080
 
 ENV VERSION=${VERSION%%-*}
 ENV MODE=${MODE}
+ENV PORT=${PORT}
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git wget unzip\ 
