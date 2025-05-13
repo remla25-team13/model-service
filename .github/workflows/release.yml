@@ -39,7 +39,7 @@ jobs:
         run: |
           IMG=ghcr.io/${{ github.repository }}
           docker build \
-            --build-arg VERSION=$(git describe --tags) \
+            --build-arg VERSION=v0.1.0 \
             --build-arg MODE=PROD \
             -t ${IMG}:latest \
             -t ${IMG}:${{ env.version_major }}-latest \
