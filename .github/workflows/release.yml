@@ -26,7 +26,7 @@ jobs:
             echo "tagged=true" >> "$GITHUB_OUTPUT"
           else
             echo "Not a tagged release. Extracting prerelease version"
-            VERSION="$(./get_semver.sh)"
+            VERSION="$(./get_version.sh)"
             echo "Version: $VERSION"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
