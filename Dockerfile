@@ -1,14 +1,16 @@
 FROM python:3.12.9-slim
 
-ARG ARTIFACT_VERSION="v0.0.8"
+ARG ARTIFACT_VERSION="v1.2.0"
 ARG MODE="DEV"
-ARG PORT=8080
+ARG PORT=8081
 ARG HOST="0.0.0.0"
+ARG MODEL_TYPE="gauss"
 
 ENV ARTIFACT_VERSION=${ARTIFACT_VERSION%%-*}
 ENV MODE=${MODE}
 ENV PORT=${PORT}
 ENV HOST=${HOST}
+ENV MODEL_TYPE=${MODEL_TYPE}
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git wget unzip\ 

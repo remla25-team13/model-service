@@ -8,12 +8,16 @@ import requests
 from tqdm import tqdm
 from flasgger import Swagger
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from lib_ml import Preprocessor
 
-def download_model(MODEL_VERSION: str):
+
+def download_model(MODEL_VERSION: str, MODEL_TYPE):
     path = "/root/output/sentiment_model.pkl"
-    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/sentiment_model.pk1"
+    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/model_{MODEL_TYPE}.pk1"
+
+    print(f"Downloading {MODEL_TYPE}@{MODEL_VERSION}")
 
     if not os.path.isfile(path):
         response = requests.get(url, stream=True)
@@ -28,7 +32,7 @@ def download_model(MODEL_VERSION: str):
 
 def download_vectorizer(MODEL_VERSION: str):
     path = "/root/output/bow_vectorizer.pkl"
-    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/bow_vectorizer.pkl"
+    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/vectorizer.pkl"
 
     if not os.path.isfile(path):
         response = requests.get(url, stream=True)
@@ -40,20 +44,24 @@ def download_vectorizer(MODEL_VERSION: str):
     else:
         print("Vectorizer file already exists")
 
+
 mode = os.getenv("MODE", "DEV")
 port = os.getenv("PORT", 8080)
 host = os.getenv("HOST", "0.0.0.0")
-artifact_version = os.getenv("ARTIFACT_VERSION", "v0.0.8")
+artifact_version = os.getenv("ARTIFACT_VERSION", "v1.2.0")
+model_type = os.getenv("MODEL_TYPE", "gauss")
 
 debug = False if mode == 'PROD' else True
 
 app = Flask(__name__)
+CORS(app)
 swagger = Swagger(app)
 preprocessor = Preprocessor()
 
 print("Downloading model files")
-download_model(artifact_version)
+download_model(artifact_version, model_type)
 download_vectorizer(artifact_version)
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -66,65 +74,68 @@ def home():
     """
     return "Hello, World! From model-service."
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
-  """
-  Predict the sentiment of a review.
-  ---
-  consumes:
-    - application/json
-  parameters:
-      - name: input_data
-        in: body
-        description: review to be classified.
-        required: True
-        schema:
-          type: object
-          required: review
-          properties:
-              review:
-                  type: string
-                  example: This is an example of a review.
-  responses:
-    200:
-      description: "The result of the classification: 'Positive' or 'Negative'."
-  """
-  input_data = request.get_json()
-  review = input_data.get('review')
-  
-  vectorizer = joblib.load("output/bow_vectorizer.pkl")
-  model = joblib.load('output/sentiment_model.pkl')
-  
-  processed_sms = preprocessor.preprocess(review) 
-  vectorized = vectorizer.transform([processed_sms]).toarray()
-  
-  prediction = model.predict(vectorized)[0]
-  prediction = "Positive" if prediction == 1 else "Negative"
+    """
+    Predict the sentiment of a review.
+    ---
+    consumes:
+      - application/json
+    parameters:
+        - name: input_data
+          in: body
+          description: review to be classified.
+          required: True
+          schema:
+            type: object
+            required: review
+            properties:
+                review:
+                    type: string
+                    example: This is an example of a review.
+    responses:
+      200:
+        description: "The result of the classification:
+          'Positive' or 'Negative'."
+    """
+    input_data = request.get_json()
+    review = input_data.get('review')
 
-  res = {
-      "result": prediction,
-      "sms": review
-  }
-  
-  return jsonify(res)
+    vectorizer = joblib.load("output/bow_vectorizer.pkl")
+    model = joblib.load('output/sentiment_model.pkl')
+
+    processed_sms = preprocessor.preprocess(review) 
+    vectorized = vectorizer.transform([processed_sms]).toarray()
+
+    prediction = model.predict(vectorized)[0]
+    prediction = "Positive" if prediction == 1 else "Negative"
+
+    res = {
+        "result": prediction,
+        "sms": review
+    }
+
+    return jsonify(res)
+
 
 @app.route("/version")
 def version():
-  """
-  Show model service version
-  ---
-  consumes:
-    - nothing
-  responses:
-    200:
-      description: "The service version"
-  """
-  version = os.getenv("VERSION", "unknown")
+    """
+    Show model service version
+    ---
+    consumes:
+      - nothing
+    responses:
+      200:
+        description: "The service version"
+    """
+    version = os.getenv("VERSION", "unknown")
 
-  return jsonify({
-    "version": version
-  })
+    return jsonify({
+      "version": version
+    })
+
 
 if __name__ == '__main__':
-  app.run(host=host, port=port, debug=debug)
-    
+    app.run(host=host, port=port, debug=debug)

@@ -4,4 +4,5 @@ flasgger==0.9.7.1
 waitress==3.0.2
 requests==2.32.3
 tqdm==4.67.1
+flask-cors==5.0.1
 lib_ml @ git+https://github.com/remla25-team13/lib-ml.git@v0.1.1
