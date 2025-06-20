@@ -14,8 +14,8 @@ from lib_ml import Preprocessor
 
 
 def download_model(MODEL_VERSION: str, MODEL_TYPE):
-    path = "/root/output/sentiment_model.pkl"
-    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/model_{MODEL_TYPE}.pk1"
+    path = "output/sentiment_model.pkl"
+    url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/model-{MODEL_TYPE}.jbl"
 
     print(f"Downloading {MODEL_TYPE}@{MODEL_VERSION}")
 
@@ -26,12 +26,14 @@ def download_model(MODEL_VERSION: str, MODEL_TYPE):
             with open(path, "wb") as f:
                 for chunk in tqdm(response.iter_content(chunk_size=8192)):
                     f.write(chunk)
+        else:
+            print("Could not find file.")
     else:
         print("Model file already exist.")
 
 
 def download_vectorizer(MODEL_VERSION: str):
-    path = "/root/output/bow_vectorizer.pkl"
+    path = "output/bow_vectorizer.pkl"
     url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/vectorizer.pkl"
 
     if not os.path.isfile(path):
@@ -40,7 +42,9 @@ def download_vectorizer(MODEL_VERSION: str):
         if response.status_code == 200:
             with open(path, "wb") as f:
                 for chunk in tqdm(response.iter_content(chunk_size=8192)):
-                    f.write(chunk)            
+                    f.write(chunk)
+        else:
+            print("Could not find file.")
     else:
         print("Vectorizer file already exists")
 
@@ -48,7 +52,7 @@ def download_vectorizer(MODEL_VERSION: str):
 mode = os.getenv("MODE", "DEV")
 port = os.getenv("PORT", 8080)
 host = os.getenv("HOST", "0.0.0.0")
-artifact_version = os.getenv("ARTIFACT_VERSION", "v1.2.0")
+artifact_version = os.getenv("ARTIFACT_VERSION", "v1.3.0")
 model_type = os.getenv("MODEL_TYPE", "gauss")
 
 debug = False if mode == 'PROD' else True
@@ -96,8 +100,17 @@ def predict():
                     example: This is an example of a review.
     responses:
       200:
-        description: "The result of the classification:
-          'Positive' or 'Negative'."
+        description:
+          "The result of the classification: 'Positive' (1) or 'Negative' (0)."
+        schema:
+          type: object
+          properties:
+            result:
+              type: number
+              example: 1
+            review:
+              type: string
+              example: This is an example of a review.
     """
     input_data = request.get_json()
     review = input_data.get('review')
@@ -109,11 +122,10 @@ def predict():
     vectorized = vectorizer.transform([processed_sms]).toarray()
 
     prediction = model.predict(vectorized)[0]
-    prediction = "Positive" if prediction == 1 else "Negative"
 
     res = {
-        "result": prediction,
-        "sms": review
+        "result": str(prediction),
+        "review": review
     }
 
     return jsonify(res)
