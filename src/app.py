@@ -14,7 +14,7 @@ from lib_ml import Preprocessor
 
 
 def download_model(MODEL_VERSION: str, MODEL_TYPE):
-    path = "output/sentiment_model.pkl"
+    path = f"output/model-{MODEL_TYPE}.jbl"
     url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/model-{MODEL_TYPE}.jbl"
 
     print(f"Downloading {MODEL_TYPE}@{MODEL_VERSION}")
@@ -33,7 +33,7 @@ def download_model(MODEL_VERSION: str, MODEL_TYPE):
 
 
 def download_vectorizer(MODEL_VERSION: str):
-    path = "output/bow_vectorizer.pkl"
+    path = "output/vectorizer.pkl"
     url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/vectorizer.pkl"
 
     if not os.path.isfile(path):
@@ -52,7 +52,7 @@ def download_vectorizer(MODEL_VERSION: str):
 mode = os.getenv("MODE", "DEV")
 port = os.getenv("PORT", 8080)
 host = os.getenv("HOST", "0.0.0.0")
-artifact_version = os.getenv("ARTIFACT_VERSION", "v1.3.0")
+artifact_version = os.getenv("ARTIFACT_VERSION", "v1.3.3")
 model_type = os.getenv("MODEL_TYPE", "gauss")
 
 debug = False if mode == 'PROD' else True
