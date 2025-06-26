@@ -3,18 +3,18 @@ Flask API for the Restaurant sentiment analysis model(s).
 """
 
 import os
+
 import joblib
 import requests
-from tqdm import tqdm
 from flasgger import Swagger
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
 from lib_ml import Preprocessor
+from tqdm import tqdm
 
 
 def download_model(MODEL_VERSION: str, MODEL_TYPE):
-    path = f"output/model-{MODEL_TYPE}.jbl"
+    path = f"output/model_{MODEL_TYPE}_{MODEL_VERSION}.jbl"
     url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/model-{MODEL_TYPE}.jbl"
 
     print(f"Downloading {MODEL_TYPE}@{MODEL_VERSION}")
@@ -33,7 +33,7 @@ def download_model(MODEL_VERSION: str, MODEL_TYPE):
 
 
 def download_vectorizer(MODEL_VERSION: str):
-    path = "output/vectorizer.pkl"
+    path = f"output/vectorizer_{MODEL_VERSION}.pkl"
     url = f"https://github.com/remla25-team13/model-training/releases/download/{MODEL_VERSION}/vectorizer.pkl"
 
     if not os.path.isfile(path):
@@ -49,13 +49,14 @@ def download_vectorizer(MODEL_VERSION: str):
         print("Vectorizer file already exists")
 
 
+model_version = os.getenv("MODEL_VERSION", "v2.0.0")
 mode = os.getenv("MODE", "DEV")
 port = os.getenv("PORT", 8080)
 host = os.getenv("HOST", "0.0.0.0")
-artifact_version = os.getenv("ARTIFACT_VERSION", "v1.3.3")
+service_version = os.getenv("ARTIFACT_VERSION", "v2.0.0")
 model_type = os.getenv("MODEL_TYPE", "gauss")
 
-debug = False if mode == 'PROD' else True
+debug = False if mode == "PROD" else True
 
 app = Flask(__name__)
 CORS(app)
@@ -63,8 +64,8 @@ swagger = Swagger(app)
 preprocessor = Preprocessor()
 
 print("Downloading model files")
-download_model(artifact_version, model_type)
-download_vectorizer(artifact_version)
+download_model(model_version, model_type)
+download_vectorizer(model_version)
 
 
 @app.route("/", methods=["GET"])
@@ -79,7 +80,7 @@ def home():
     return "Hello, World! From model-service."
 
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     """
     Predict the sentiment of a review.
@@ -113,20 +114,17 @@ def predict():
               example: This is an example of a review.
     """
     input_data = request.get_json()
-    review = input_data.get('review')
+    review = input_data.get("review")
 
-    vectorizer = joblib.load("output/bow_vectorizer.pkl")
-    model = joblib.load('output/sentiment_model.pkl')
+    vectorizer = joblib.load(f"output/vectorizer_{model_version}.pkl")
+    model = joblib.load(f"output/model_{model_type}_{model_version}.jbl")
 
-    processed_sms = preprocessor.preprocess(review) 
+    processed_sms = preprocessor.preprocess(review)
     vectorized = vectorizer.transform([processed_sms]).toarray()
 
     prediction = model.predict(vectorized)[0]
 
-    res = {
-        "result": str(prediction),
-        "review": review
-    }
+    res = {"result": str(prediction), "review": review}
 
     return jsonify(res)
 
@@ -142,12 +140,8 @@ def version():
       200:
         description: "The service version"
     """
-    version = os.getenv("VERSION", "unknown")
-
-    return jsonify({
-      "version": version
-    })
+    return jsonify({"version": service_version})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host=host, port=port, debug=debug)
